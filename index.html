@@ -13,67 +13,189 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LINCS BREAD WEBSITE</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f0f2f5;
-            margin: 0;
-        }
-        .timer-box {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        #timer {
-            font-size: 48px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 6px;
-            background-color: #007bff;
-            color: white;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+         <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Timer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f9;
+      margin: 0;
+    }
+    .timer-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    #display {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button.reset {
+      background-color: #dc3545;
+    }
+    button.reset:hover {
+      background-color: #a71d2a;
+    }
+  </style>
 </head>
 <body>
 
-    
-    
+  <div class="timer-container">
+    <div id="display">01:00</div>
+    <button onclick="startTimer()">Start</button>
+    <button class="reset" onclick="resetTimer()">Reset</button>
+  </div>
 
-    <script>
-        let seconds = 0;
-        let timerInterval = null;
-        const timerDisplay = document.getElementById('timer');
-        const actionBtn = document.getElementById('actionBtn');
+  <script>
+    let totalSeconds = 60; // Set your default time in seconds (e.g., 60 seconds)
+    let remainingSeconds = totalSeconds;
+    let timerInterval = null;
 
-        // Function that increases the timer by 1
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                seconds++;
-                timerDisplay.textContent = seconds;
-            }, 1000); // 1000 milliseconds = 1 second
+    const displayElement = document.getElementById('display');
+
+    function updateDisplay() {
+      const minutes = Math.floor(remainingSeconds / 60);
+      const seconds = remainingSeconds % 60;
+      displayElement.textContent = 
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      if (timerInterval !== null) return; // Prevent multiple intervals from stacking
+
+      timerInterval = setInterval(() => {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+          updateDisplay();
+        } else {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          alert('Time is up!');
         }
+      }, 1000);
+    }
 
-    
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      remainingSeconds = totalSeconds;
+      updateDisplay();
+    }
 
-        // Start the timer automatically when the page loads
-        startTimer();
+    updateDisplay();
+  </script>
+
+</body>
+</html>
+Use code with caution.
+If you want to change the default starting time (such as 5 minutes or 10 minutes), let me know and I can adjust the code for you!
+AI responses may include mistakes. Learn more
+
+I don't want a reset button just make a timer go up and that's it
+
+Here is the updated code. This version is a count-up timer (stopwatch) that only has a Start button—no pause button and no reset button. Once started, it will count up indefinitely until the page is closed or refreshed.
+html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Count-Up Timer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f9;
+      margin: 0;
+    }
+    .timer-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    #display {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      margin: 5px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #28a745;
+      color: white;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="timer-container">
+    <div id="display">00:00</div>
+    <button id="startBtn" onclick="startTimer()">Start</button>
+  </div>
+
+  <script>
+    let totalSeconds = 0;
+    let timerInterval = null;
+
+    const displayElement = document.getElementById('display');
+    const startButton = document.getElementById('startBtn');
+
+    function updateDisplay() {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      displayElement.textContent = 
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function startTimer() {
+      if (timerInterval !== null) return; 
+      
+      // Disables the button after clicking so it can't be stopped or restarted
+      startButton.disabled = true; 
+
+      timerInterval = setInterval(() => {
+        totalSeconds++;
+        updateDisplay();
+      }, 1000);
+    }
+  </script>
     </script>
 
 </body>
