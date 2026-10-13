@@ -72,17 +72,7 @@
             }, 1000); // 1000 milliseconds = 1 second
         }
 
-        // Pause and Resume logic
-        actionBtn.addEventListener('click', () => {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-                actionBtn.textContent = 'Resume';
-            } else {
-                startTimer();
-                actionBtn.textContent = 'Pause';
-            }
-        });
+    
 
         // Start the timer automatically when the page loads
         startTimer();
