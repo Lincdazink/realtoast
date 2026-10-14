@@ -94,6 +94,179 @@
 
         startBtn.addEventListener('click', startTimer);
 
+
+       <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer with Longest Time Leaderboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+            margin: 0;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .timer-container, .leaderboard-container {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .display {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+        button {
+            font-size: 1rem;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-start { background-color: #28a745; color: white; }
+        .btn-start:hover { background-color: #218838; }
+        
+        .btn-log { background-color: #007bff; color: white; }
+        .btn-log:hover { background-color: #0056b3; }
+        .btn-log:disabled { background-color: #cccccc; cursor: not-allowed; }
+
+        .btn-reset { background-color: #dc3545; color: white; font-size: 0.8rem; padding: 5px 10px; margin-top: 15px;}
+        .btn-reset:hover { background-color: #c82333; }
+        
+        h2 { margin-top: 0; color: #333; }
+        ul { list-style: none; padding: 0; margin: 15px 0 0 0; text-align: left; }
+        li { 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+            display: flex; 
+            justify-content: space-between; 
+        }
+        li:last-child { border-bottom: none; }
+        .rank { font-weight: bold; color: #007bff; }
+        .no-data { text-align: center; color: #888; font-style: italic; }
+   
+<body>
+
+    <!-- Timer Component -->
+    <div class="timer-container">
+        <div class="display" id="timerDisplay">00:00:00</div>
+        <button class="btn-start" id="startBtn">Start</button>
+        <button class="btn-log" id="logBtn" disabled>Log Time</button>
+    </div>
+
+    <!-- Leaderboard Component -->
+    <div class="leaderboard-container">
+        <h2>Leaderboard (Longest Surviving)</h2>
+        <ul id="leaderboardList"></ul>
+        <button class="btn-reset" id="resetBtn">Reset Board</button>
+    </div>
+
+    <script>
+        let startTime = 0;
+        let timerInterval;
+        let isRunning = false;
+        let currentElapsedTime = 0;
+        
+        let leaderboardData = JSON.parse(localStorage.getItem('timerLeaderboard')) || [];
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const startBtn = document.getElementById('startBtn');
+        const logBtn = document.getElementById('logBtn');
+        const leaderboardList = document.getElementById('leaderboardList');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function formatTime(ms) {
+            let totalSeconds = Math.floor(ms / 1000);
+            let totalMinutes = Math.floor(totalSeconds / 60);
+            let totalHours = Math.floor(totalMinutes / 60);
+
+            let seconds = totalSeconds % 60;
+            let minutes = totalMinutes % 60;
+            let hours = totalHours;
+
+            let hrsStr = String(hours).padStart(2, '0');
+            let minsStr = String(minutes).padStart(2, '0');
+            let secsStr = String(seconds).padStart(2, '0');
+
+            return `${hrsStr}:${minsStr}:${secsStr}`;
+        }
+
+        function renderLeaderboard() {
+            leaderboardList.innerHTML = "";
+            
+            if (leaderboardData.length === 0) {
+                leaderboardList.innerHTML = '<li class="no-data">No times logged yet</li>';
+                return;
+            }
+
+            leaderboardData.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="rank">#${index + 1}</span> <span>${entry.name}</span> <strong>${entry.formatted}</strong>`;
+                leaderboardList.appendChild(li);
+            });
+        }
+
+        function startTimer() {
+            if (isRunning) return; 
+            
+            isRunning = true;
+            logBtn.disabled = false;
+            startTime = performance.now();
+            
+            timerInterval = setInterval(() => {
+                currentElapsedTime = performance.now() - startTime;
+                timerDisplay.textContent = formatTime(currentElapsedTime);
+            }, 1000);
+        }
+
+        function logTime() {
+            if (!isRunning) return;
+
+            clearInterval(timerInterval);
+            isRunning = false;
+            logBtn.disabled = true;
+
+            const userName = prompt("Enter your name for the leaderboard:", "Player") || "Anonymous";
+
+            leaderboardData.push({ 
+                name: userName, 
+                time: currentElapsedTime, 
+                formatted: formatTime(currentElapsedTime) 
+            });
+
+            // Sort by LONGEST time (descending order: biggest ms first)
+            leaderboardData.sort((a, b) => b.time - a.time);
+
+            localStorage.setItem('timerLeaderboard', JSON.stringify(leaderboardData));
+
+            renderLeaderboard();
+        }
+
+        function resetLeaderboard() {
+            if (confirm("Are you sure you want to clear the entire leaderboard?")) {
+                leaderboardData = [];
+                localStorage.removeItem('timerLeaderboard');
+                renderLeaderboard();
+            }
+        }
+
+        startBtn.addEventListener('click', startTimer);
+        logBtn.addEventListener('click', logTime);
+        resetBtn.addEventListener('click', resetLeaderboard);
+
+        renderLeaderboard();
+
   </script>
     </script>
 
