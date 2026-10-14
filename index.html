@@ -100,175 +100,221 @@
 
        <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timer with Longest Time Leaderboard</title>
+    <title>RealToast Game & Leaderboard</title>
     <style>
+        /* Base Page Styling */
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
             margin: 0;
+            padding: 20px;
+            display: flex;
             flex-direction: column;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-        .timer-container, .leaderboard-container {
+
+        .header-container {
             text-align: center;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            margin-bottom: 30px;
         }
-        .display {
-            font-size: 3rem;
+
+        .header-container h1 {
+            color: #ff9f43;
+            font-size: 2.5rem;
+            margin: 10px 0;
+        }
+
+        .header-container img {
+            max-width: 150px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Leaderboard Container */
+        .leaderboard-wrapper {
+            background-color: #2d2d2d;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .leaderboard-wrapper h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #ff9f43;
+            border-bottom: 2px solid #3d3d3d;
+            padding-bottom: 10px;
+        }
+
+        /* Leaderboard List */
+        .leaderboard-list {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background-color: #383838;
+            margin-bottom: 8px;
+            border-radius: 8px;
             font-weight: bold;
-            color: #333;
-            margin-bottom: 20px;
-            font-family: monospace;
+            transition: transform 0.2s;
         }
-        button {
+
+        .leaderboard-item:hover {
+            transform: scale(1.02);
+            background-color: #404040;
+        }
+
+        .leaderboard-item .rank {
+            color: #ff9f43;
+            margin-right: 10px;
+        }
+
+        .leaderboard-item .name {
+            flex-grow: 1;
+        }
+
+        .leaderboard-item .score {
+            color: #10ac84;
+        }
+
+        /* Controls and Forms */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        input[type="text"], input[type="number"] {
+            background-color: #3d3d3d;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 10px;
+            border-radius: 6px;
             font-size: 1rem;
-            padding: 10px 20px;
-            margin: 5px;
+        }
+
+        input[type="text"] {
+            flex-grow: 2;
+        }
+
+        input[type="number"] {
+            width: 80px;
+        }
+
+        button {
+            background-color: #ff9f43;
+            color: #1a1a1a;
             border: none;
-            border-radius: 5px;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 1rem;
             transition: background 0.2s;
         }
-        .btn-start { background-color: #28a745; color: white; }
-        .btn-start:hover { background-color: #218838; }
-        
-        .btn-log { background-color: #007bff; color: white; }
-        .btn-log:hover { background-color: #0056b3; }
-        .btn-log:disabled { background-color: #cccccc; cursor: not-allowed; }
 
-        .btn-reset { background-color: #dc3545; color: white; font-size: 0.8rem; padding: 5px 10px; margin-top: 15px;}
-        .btn-reset:hover { background-color: #c82333; }
-        
-        h2 { margin-top: 0; color: #333; }
-        ul { list-style: none; padding: 0; margin: 15px 0 0 0; text-align: left; }
-        li { 
-            padding: 10px; 
-            border-bottom: 1px solid #eee; 
-            display: flex; 
-            justify-content: space-between; 
+        button:hover {
+            background-color: #ee8f2e;
         }
-        li:last-child { border-bottom: none; }
-        .rank { font-weight: bold; color: #007bff; }
-        .no-data { text-align: center; color: #888; font-style: italic; }
-   
+    </style>
+</head>
 <body>
 
-    <!-- Timer Component -->
-    <div class="timer-container">
-        <div class="display" id="timerDisplay">00:00:00</div>
-        <button class="btn-start" id="startBtn">Start</button>
-        <button class="btn-log" id="logBtn" disabled>Log Time</button>
+    <!-- Unified Header Section -->
+    <div class="header-container">
+        <img src="toast.png" alt="RealToast Logo" onerror="this.style.display='none'">
+        <h1>RealToast Leaderboard</h1>
     </div>
 
-    <!-- Leaderboard Component -->
-    <div class="leaderboard-container">
-        <h2>Leaderboard (Longest Surviving)</h2>
-        <ul id="leaderboardList"></ul>
-        <button class="btn-reset" id="resetBtn">Reset Board</button>
+    <!-- Working Leaderboard System -->
+    <div class="leaderboard-wrapper">
+        <h2>Top Toasts</h2>
+        
+        <ul class="leaderboard-list" id="leaderboardList">
+            <!-- Dynamic scores render here via JavaScript -->
+        </ul>
+
+        <div class="input-group">
+            <input type="text" id="playerName" placeholder="Player Name" maxlength="15">
+            <input type="number" id="playerScore" placeholder="Score" min="0">
+            <button onclick="addScore()">Submit</button>
+        </div>
     </div>
 
     <script>
-        let startTime = 0;
-        let timerInterval;
-        let isRunning = false;
-        let currentElapsedTime = 0;
-        
-        let leaderboardData = JSON.parse(localStorage.getItem('timerLeaderboard')) || [];
+        // Clean LocalStorage Initialization
+        let highScores = JSON.parse(localStorage.getItem('realtoast_scores')) || [
+            { name: "ToastMaster", score: 2500 },
+            { name: "BurntBread", score: 1200 },
+            { name: "ButterLover", score: 850 }
+        ];
 
-        const timerDisplay = document.getElementById('timerDisplay');
-        const startBtn = document.getElementById('startBtn');
-        const logBtn = document.getElementById('logBtn');
-        const leaderboardList = document.getElementById('leaderboardList');
-        const resetBtn = document.getElementById('resetBtn');
+        // Renders the board cleanly sorted from highest to lowest
+        function updateLeaderboardUI() {
+            const listElement = document.getElementById('leaderboardList');
+            listElement.innerHTML = '';
 
-        function formatTime(ms) {
-            let totalSeconds = Math.floor(ms / 1000);
-            let totalMinutes = Math.floor(totalSeconds / 60);
-            let totalHours = Math.floor(totalMinutes / 60);
+            // Sort scores natively by highest points
+            highScores.sort((a, b) => b.score - a.score);
+            
+            // Limit leaderboard representation to top 5 players
+            const topScores = highScores.slice(0, 5);
 
-            let seconds = totalSeconds % 60;
-            let minutes = totalMinutes % 60;
-            let hours = totalHours;
+            topScores.forEach((player, index) => {
+                const item = document.createElement('li');
+                item.className = 'leaderboard-item';
+                item.innerHTML = `
+                    <span class="rank">#${index + 1}</span>
+                    <span class="name">${escapeHTML(player.name)}</span>
+                    <span class="score">${player.score} pts</span>
+                `;
+                listElement.appendChild(item);
+            });
 
-            let hrsStr = String(hours).padStart(2, '0');
-            let minsStr = String(minutes).padStart(2, '0');
-            let secsStr = String(seconds).padStart(2, '0');
-
-            return `${hrsStr}:${minsStr}:${secsStr}`;
+            // Save the state persistently
+            localStorage.setItem('realtoast_scores', JSON.stringify(highScores));
         }
 
-        function renderLeaderboard() {
-            leaderboardList.innerHTML = "";
+        // Functional Submission Handler
+        function addScore() {
+            const nameInput = document.getElementById('playerName');
+            const scoreInput = document.getElementById('playerScore');
             
-            if (leaderboardData.length === 0) {
-                leaderboardList.innerHTML = '<li class="no-data">No times logged yet</li>';
+            const name = nameInput.value.trim();
+            const score = parseInt(scoreInput.value, 10);
+
+            if (name === '' || isNaN(score) || score < 0) {
+                alert('Please enter a valid name and score.');
                 return;
             }
 
-            leaderboardData.forEach((entry, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `<span class="rank">#${index + 1}</span> <span>${entry.name}</span> <strong>${entry.formatted}</strong>`;
-                leaderboardList.appendChild(li);
-            });
+            // Append data, refresh UI layout, clear form inputs
+            highScores.push({ name: name, score: score });
+            updateLeaderboardUI();
+
+            nameInput.value = '';
+            scoreInput.value = '';
         }
 
-        function startTimer() {
-            if (isRunning) return; 
-            
-            isRunning = true;
-            logBtn.disabled = false;
-            startTime = performance.now();
-            
-            timerInterval = setInterval(() => {
-                currentElapsedTime = performance.now() - startTime;
-                timerDisplay.textContent = formatTime(currentElapsedTime);
-            }, 1000);
+        // Helper to prevent script injection (XSS validation)
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
         }
 
-        function logTime() {
-            if (!isRunning) return;
-
-            clearInterval(timerInterval);
-            isRunning = false;
-            logBtn.disabled = true;
-
-            const userName = prompt("Enter your name for the leaderboard:", "Player") || "Anonymous";
-
-            leaderboardData.push({ 
-                name: userName, 
-                time: currentElapsedTime, 
-                formatted: formatTime(currentElapsedTime) 
-            });
-
-            // Sort by LONGEST time (descending order: biggest ms first)
-            leaderboardData.sort((a, b) => b.time - a.time);
-
-            localStorage.setItem('timerLeaderboard', JSON.stringify(leaderboardData));
-
-            renderLeaderboard();
-        }
-
-        function resetLeaderboard() {
-            if (confirm("Are you sure you want to clear the entire leaderboard?")) {
-                leaderboardData = [];
-                localStorage.removeItem('timerLeaderboard');
-                renderLeaderboard();
-            }
-        }
-
-        startBtn.addEventListener('click', startTimer);
-        logBtn.addEventListener('click', logTime);
-        resetBtn.addEventListener('click', resetLeaderboard);
-
-        renderLeaderboard();
+        // Run UI preparation on application boot
+        window.onload = updateLeaderboardUI;
     </script>
 </body>
 </html>
