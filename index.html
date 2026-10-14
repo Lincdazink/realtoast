@@ -33,12 +33,23 @@
             max-width: 450px;
             text-align: center;
             border: 4px solid #f28482;
+            position: relative;
+            overflow: hidden;
         }
 
         h1 {
             color: #e07a5f;
             margin-bottom: 20px;
             font-size: 2rem;
+        }
+
+        /* Screen management */
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
         }
 
         .bread-img {
@@ -69,32 +80,58 @@
             margin-bottom: 25px;
         }
 
-        .leaderboard {
-            margin-top: 20px;
-            text-align: left;
-            border-top: 2px dashed #f28482;
-            padding-top: 20px;
+        /* Action Buttons */
+        .btn {
+            background: #e07a5f;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+            margin-top: 10px;
         }
 
+        .btn:hover {
+            background-color: #d96a4a;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #3d5a80;
+        }
+
+        .btn-secondary:hover {
+            background-color: #2a4160;
+        }
+
+        /* Leaderboard View */
         .leaderboard h2 {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             color: #e07a5f;
-            margin-bottom: 10px;
-            text-align: center;
+            margin-bottom: 20px;
         }
 
         .leaderboard-list {
             list-style: none;
-            max-height: 200px;
+            max-height: 280px;
             overflow-y: auto;
+            margin-bottom: 20px;
+            text-align: left;
         }
 
         .leaderboard-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 12px;
+            padding: 12px 15px;
             background: #fdf0ed;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             border-radius: 8px;
             font-weight: 500;
         }
@@ -147,24 +184,6 @@
         .modal input:focus {
             border-color: #e07a5f;
         }
-
-        .modal button {
-            background: #e07a5f;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-
-        .modal button:hover {
-            background: #ced4da;
-            background-color: #d96a4a;
-        }
     </style>
 </head>
 <body>
@@ -174,30 +193,40 @@
         <div class="modal">
             <h3>Enter Username to Start</h3>
             <input type="text" id="usernameInput" placeholder="ToastMaster99" maxlength="15" required>
-            <button id="startButton">Start Toasting 🍞</button>
+            <button class="btn" id="startButton">Start Toasting 🍞</button>
         </div>
     </div>
 
     <!-- Main Container -->
     <div class="container">
-        <h1>Real Toast Timer</h1>
         
-        <!-- Photo of Bread -->
-        <img src="https://unsplash.com" alt="Delicious Bread" class="bread-img">
-        
-        <div>Current Toaster:</div>
-        <div class="user-tag" id="currentUserDisplay">---</div>
+        <!-- SCREEN 1: THE MAIN TIMER DISPLAY -->
+        <div id="timerScreen" class="screen active">
+            <h1>Real Toast Timer</h1>
+            
+            <img src="https://unsplash.com" alt="Delicious Bread" class="bread-img">
+            
+            <div>Current Toaster:</div>
+            <div class="user-tag" id="currentUserDisplay">---</div>
 
-        <!-- Up-Counting Timer (No Stop Button) -->
-        <div class="timer-display" id="timer">00:00:00</div>
+            <div class="timer-display" id="timer">00:00:00</div>
 
-        <!-- Leaderboard -->
-        <div class="leaderboard">
+            <!-- Button to open Leaderboard -->
+            <button class="btn" id="navToLeaderboardBtn">View Leaderboard 🏆</button>
+        </div>
+
+        <!-- SCREEN 2: THE HIDDEN LEADERBOARD -->
+        <div id="leaderboardScreen" class="screen leaderboard">
             <h2>🏆 Leaderboard (Highest Times)</h2>
+            
             <ul class="leaderboard-list" id="leaderboardList">
                 <!-- Scores injected by JS -->
             </ul>
+
+            <!-- Button to go back to the live timer -->
+            <button class="btn btn-secondary" id="navToTimerBtn">Back to Toasting 🍞</button>
         </div>
+
     </div>
 
     <script>
@@ -205,14 +234,21 @@
         let timerInterval;
         let currentUsername = "";
 
+        // Elements
         const overlay = document.getElementById('usernameOverlay');
         const usernameInput = document.getElementById('usernameInput');
         const startButton = document.getElementById('startButton');
         const currentUserDisplay = document.getElementById('currentUserDisplay');
         const timerDisplay = document.getElementById('timer');
         const leaderboardList = document.getElementById('leaderboardList');
+        
+        // Navigation Screens
+        const timerScreen = document.getElementById('timerScreen');
+        const leaderboardScreen = document.getElementById('leaderboardScreen');
+        const navToLeaderboardBtn = document.getElementById('navToLeaderboardBtn');
+        const navToTimerBtn = document.getElementById('navToTimerBtn');
 
-        // Load leaderboard on boot
+        // Initial setup
         displayLeaderboard();
 
         // Handle user signup and start timer
@@ -221,11 +257,23 @@
             if (name) {
                 currentUsername = name;
                 currentUserDisplay.textContent = currentUsername;
-                overlay.style.display = 'none'; // Close overlay
+                overlay.style.display = 'none';
                 startTimer();
             } else {
                 alert("Please enter a valid username!");
             }
+        });
+
+        // Navigation Mechanics
+        navToLeaderboardBtn.addEventListener('click', () => {
+            timerScreen.classList.remove('active');
+            leaderboardScreen.classList.add('active');
+            displayLeaderboard(); // Ensure data is updated when opening
+        });
+
+        navToTimerBtn.addEventListener('click', () => {
+            leaderboardScreen.classList.remove('active');
+            timerScreen.classList.add('active');
         });
 
         // Start the continuous up-timer
@@ -237,7 +285,6 @@
         function updateTimer() {
             const elapsedTime = Date.now() - startTime;
             
-            // Calculate hours, minutes, seconds
             const totalSeconds = Math.floor(elapsedTime / 1000);
             const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
             const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
@@ -245,35 +292,26 @@
 
             timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
 
-            // Continually save and update the score in the leaderboard live
+            // Save and update the score in the background automatically
             saveScore(currentUsername, totalSeconds);
         }
 
         // LocalStorage Leaderboard logic
         function saveScore(username, seconds) {
             let leaderboard = JSON.parse(localStorage.getItem('toast_leaderboard')) || [];
-            
-            // Check if player already exists in database
             const playerIndex = leaderboard.findIndex(p => p.name === username);
 
             if (playerIndex > -1) {
-                // Only update if current live time is higher than their past saved high score
                 if (seconds > leaderboard[playerIndex].score) {
                     leaderboard[playerIndex].score = seconds;
                 }
             } else {
-                // Add new entry
                 leaderboard.push({ name: username, score: seconds });
             }
 
-            // Sort leaderboard: Highest score (most seconds survived) on top
             leaderboard.sort((a, b) => b.score - a.score);
-
-            // Keep top 10 rows
             leaderboard = leaderboard.slice(0, 10);
-
             localStorage.setItem('toast_leaderboard', JSON.stringify(leaderboard));
-            displayLeaderboard();
         }
 
         function displayLeaderboard() {
@@ -286,22 +324,6 @@
             }
 
             leaderboard.forEach((player, index) => {
-                const item = document.createElement('li');
-                item.className = "leaderboard-item";
-                
-                // Format score seconds back to clean text string
-                const hrs = Math.floor(player.score / 3600).toString().padStart(2, '0');
-                const mins = Math.floor((player.score % 3600) / 60).toString().padStart(2, '0');
-                const secs = (player.score % 60).toString().padStart(2, '0');
-                
-                item.innerHTML = `
-                    <span>#${index + 1} ${player.name}</span>
-                    <span>${hrs}:${mins}:${secs}</span>
-                `;
-                leaderboardList.appendChild(item);
-            });
-        }
-    </script>
 </body>
 </html>
 
