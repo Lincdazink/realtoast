@@ -3,6 +3,7 @@
 <h1> whoever worships the bread the longest gets free chips-Linc</h1>
 
 <meta charset="UTF-8">
+     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Toast Timer & Leaderboard</title>
     <style>
@@ -43,7 +44,6 @@
             font-size: 2rem;
         }
 
-        /* Screen management */
         .screen {
             display: none;
         }
@@ -80,7 +80,6 @@
             margin-bottom: 25px;
         }
 
-        /* Action Buttons */
         .btn {
             background: #e07a5f;
             color: white;
@@ -112,7 +111,6 @@
             background-color: #2a4160;
         }
 
-        /* Leaderboard View */
         .leaderboard h2 {
             font-size: 1.5rem;
             color: #e07a5f;
@@ -143,7 +141,6 @@
             font-weight: bold;
         }
 
-        /* Username Modal Overlay */
         .overlay {
             position: fixed;
             top: 0;
@@ -194,8 +191,10 @@
     <div class="overlay" id="usernameOverlay">
         <div class="modal">
             <h3>Enter Username to Start</h3>
-            <input type="text" id="usernameInput" placeholder="ToastMaster99" maxlength="15" required>
-            <button class="btn" id="startButton">Start Toasting 🍞</button>
+            <!-- Added required setup attributes directly to the markup -->
+            <input type="text" id="usernameInput" placeholder="ToastMaster99" maxlength="15">
+            <!-- Explicit inline trigger handles connection issues across testing tools -->
+            <button class="btn" id="startButton" onclick="handleStartClick()">Start Toasting 🍞</button>
         </div>
     </div>
 
@@ -213,8 +212,7 @@
 
             <div class="timer-display" id="timer">00:00:00</div>
 
-            <!-- Button to open Leaderboard -->
-            <button class="btn" id="navToLeaderboardBtn">View Leaderboard 🏆</button>
+            <button class="btn" id="navToLeaderboardBtn" onclick="showLeaderboard()">View Leaderboard 🏆</button>
         </div>
 
         <!-- SCREEN 2: THE HIDDEN LEADERBOARD -->
@@ -225,95 +223,109 @@
                 <!-- Scores injected by JS -->
             </ul>
 
-            <!-- Button to go back to the live timer -->
-            <button class="btn btn-secondary" id="navToTimerBtn">Back to Toasting 🍞</button>
+            <button class="btn btn-secondary" id="navToTimerBtn" onclick="showTimer()">Back to Toasting 🍞</button>
         </div>
 
     </div>
 
+    <!-- Script at the very bottom guarantees HTML is loaded and functions are globally accessible -->
     <script>
-        // Wrap execution safely inside window loading sequence
-        window.addEventListener('DOMContentLoaded', () => {
-            let startTime;
-            let timerInterval;
-            let currentUsername = "";
+        let startTime;
+        let timerInterval;
+        let currentUsername = "";
 
-            // Elements
-            const overlay = document.getElementById('usernameOverlay');
-            const usernameInput = document.getElementById('usernameInput');
-            const startButton = document.getElementById('startButton');
-            const currentUserDisplay = document.getElementById('currentUserDisplay');
-            const timerDisplay = document.getElementById('timer');
-            const leaderboardList = document.getElementById('leaderboardList');
-            
-            // Navigation Screens
-            const timerScreen = document.getElementById('timerScreen');
-            const leaderboardScreen = document.getElementById('leaderboardScreen');
-            const navToLeaderboardBtn = document.getElementById('navToLeaderboardBtn');
-            const navToTimerBtn = document.getElementById('navToTimerBtn');
+        // Elements
+        const overlay = document.getElementById('usernameOverlay');
+        const usernameInput = document.getElementById('usernameInput');
+        const currentUserDisplay = document.getElementById('currentUserDisplay');
+        const timerDisplay = document.getElementById('timer');
+        const leaderboardList = document.getElementById('leaderboardList');
+        
+        const timerScreen = document.getElementById('timerScreen');
+        const leaderboardScreen = document.getElementById('leaderboardScreen');
 
-            // Initialize display
+        // Initial setup
+        displayLeaderboard();
+
+        // Direct Trigger Action
+        function handleStartClick() {
+            const name = usernameInput.value.trim();
+            if (name) {
+                currentUsername = name;
+                currentUserDisplay.textContent = currentUsername;
+                overlay.style.display = 'none';
+                startTimer();
+            } else {
+                alert("Please enter a valid username!");
+            }
+        }
+
+        function showLeaderboard() {
+            timerScreen.classList.remove('active');
+            leaderboardScreen.classList.add('active');
             displayLeaderboard();
+        }
 
-            // Explicitly verify element existence to block execution crash loops
-            if (startButton) {
-                startButton.addEventListener('click', () => {
-                    const name = usernameInput.value.trim();
-                    if (name) {
-                        currentUsername = name;
-                        currentUserDisplay.textContent = currentUsername;
-                        overlay.style.display = 'none';
-                        startTimer();
-                    } else {
-                        alert("Please enter a valid username!");
-                    }
-                });
-            }
+        function showTimer() {
+            leaderboardScreen.classList.remove('active');
+            timerScreen.classList.add('active');
+        }
 
-            // Navigation Mechanics
-            navToLeaderboardBtn.addEventListener('click', () => {
-                timerScreen.classList.remove('active');
-                leaderboardScreen.classList.add('active');
-                displayLeaderboard();
-            });
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
 
-            navToTimerBtn.addEventListener('click', () => {
-                leaderboardScreen.classList.remove('active');
-                timerScreen.classList.add('active');
-            });
+        function updateTimer() {
+            const elapsedTime = Date.now() - startTime;
+            const totalSeconds = Math.floor(elapsedTime / 1000);
+            const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            const secs = (totalSeconds % 60).toString().padStart(2, '0');
 
-            function startTimer() {
-                startTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
-            }
+            timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+            saveScore(currentUsername, totalSeconds);
+        }
 
-            function updateTimer() {
-                const elapsedTime = Date.now() - startTime;
-                const totalSeconds = Math.floor(elapsedTime / 1000);
-                const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-                const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-                const secs = (totalSeconds % 60).toString().padStart(2, '0');
+        function saveScore(username, seconds) {
+            let leaderboard = JSON.parse(localStorage.getItem('toast_leaderboard')) || [];
+            const playerIndex = leaderboard.findIndex(p => p.name === username);
 
-                timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
-                saveScore(currentUsername, totalSeconds);
-            }
-
-            function saveScore(username, seconds) {
-                let leaderboard = JSON.parse(localStorage.getItem('toast_leaderboard')) || [];
-                const playerIndex = leaderboard.findIndex(p => p.name === username);
-
-                if (playerIndex > -1) {
-                    if (seconds > leaderboard[playerIndex].score) {
-                        leaderboard[playerIndex].score = seconds;
-                    }
-                } else {
-                    leaderboard.push({ name: username, score: seconds });
+            if (playerIndex > -1) {
+                if (seconds > leaderboard[playerIndex].score) {
+                    leaderboard[playerIndex].score = seconds;
                 }
-
-                leaderboard.sort((a, b) => b.score - a.score);
-                leaderboard = leaderboard.slice(0, 10);
-                localStorage.setItem('toast_leaderboard', JSON.stringify(leaderboard));
+            } else {
+                leaderboard.push({ name: username, score: seconds });
             }
+
+            leaderboard.sort((a, b) => b.score - a.score);
+            leaderboard = leaderboard.slice(0, 10);
+            localStorage.setItem('toast_leaderboard', JSON.stringify(leaderboard));
+        }
+
+        function displayLeaderboard() {
+            const leaderboard = JSON.parse(localStorage.getItem('toast_leaderboard')) || [];
+            leaderboardList.innerHTML = "";
+
+            if (leaderboard.length === 0) {
+                leaderboardList.innerHTML = `<li class="leaderboard-item" style="justify-content: center;">No high scores yet!</li>`;
+                return;
+            }
+
+            leaderboard.forEach((player, index) => {
+                const item = document.createElement('li');
+                item.className = "leaderboard-item";
+                
+                const hrs = Math.floor(player.score / 3600).toString().padStart(2, '0');
+                const mins = Math.floor((player.score % 3600) / 60).toString().padStart(2, '0');
+                const secs = (player.score % 60).toString().padStart(2, '0');
+                
+Use code with caution.
+item.innerHTML = <span>#${index + 1} ${player.name}</span> <span>${hrs}:${mins}:${secs}</span>;
+leaderboardList.appendChild(item);
+});
+}
 
 </body>
 </html>
