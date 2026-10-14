@@ -320,7 +320,7 @@
                 const mins = Math.floor((player.score % 3600) / 60).toString().padStart(2, '0');
                 const secs = (player.score % 60).toString().padStart(2, '0');
                 
-Use code with caution.
+
 item.innerHTML = `<span>#${index + 1} ${player.name}</span> <span>${hrs}:${mins}:${secs}</span>`;
 leaderboardList.appendChild(item);
 });
