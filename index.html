@@ -93,6 +93,7 @@
             transition: background 0.2s, transform 0.1s;
             width: 100%;
             margin-top: 10px;
+            display: block;
         }
 
         .btn:hover {
@@ -179,6 +180,7 @@
             border-radius: 8px;
             font-size: 1rem;
             outline: none;
+            color: #3d5a80;
         }
 
         .modal input:focus {
@@ -230,100 +232,89 @@
     </div>
 
     <script>
-        let startTime;
-        let timerInterval;
-        let currentUsername = "";
+        // Wrap execution safely inside window loading sequence
+        window.addEventListener('DOMContentLoaded', () => {
+            let startTime;
+            let timerInterval;
+            let currentUsername = "";
 
-        // Elements
-        const overlay = document.getElementById('usernameOverlay');
-        const usernameInput = document.getElementById('usernameInput');
-        const startButton = document.getElementById('startButton');
-        const currentUserDisplay = document.getElementById('currentUserDisplay');
-        const timerDisplay = document.getElementById('timer');
-        const leaderboardList = document.getElementById('leaderboardList');
-        
-        // Navigation Screens
-        const timerScreen = document.getElementById('timerScreen');
-        const leaderboardScreen = document.getElementById('leaderboardScreen');
-        const navToLeaderboardBtn = document.getElementById('navToLeaderboardBtn');
-        const navToTimerBtn = document.getElementById('navToTimerBtn');
-
-        // Initial setup
-        displayLeaderboard();
-
-        // Handle user signup and start timer
-        startButton.addEventListener('click', () => {
-            const name = usernameInput.value.trim();
-            if (name) {
-                currentUsername = name;
-                currentUserDisplay.textContent = currentUsername;
-                overlay.style.display = 'none';
-                startTimer();
-            } else {
-                alert("Please enter a valid username!");
-            }
-        });
-
-        // Navigation Mechanics
-        navToLeaderboardBtn.addEventListener('click', () => {
-            timerScreen.classList.remove('active');
-            leaderboardScreen.classList.add('active');
-            displayLeaderboard(); // Ensure data is updated when opening
-        });
-
-        navToTimerBtn.addEventListener('click', () => {
-            leaderboardScreen.classList.remove('active');
-            timerScreen.classList.add('active');
-        });
-
-        // Start the continuous up-timer
-        function startTimer() {
-            startTime = Date.now();
-            timerInterval = setInterval(updateTimer, 1000);
-        }
-
-        function updateTimer() {
-            const elapsedTime = Date.now() - startTime;
+            // Elements
+            const overlay = document.getElementById('usernameOverlay');
+            const usernameInput = document.getElementById('usernameInput');
+            const startButton = document.getElementById('startButton');
+            const currentUserDisplay = document.getElementById('currentUserDisplay');
+            const timerDisplay = document.getElementById('timer');
+            const leaderboardList = document.getElementById('leaderboardList');
             
-            const totalSeconds = Math.floor(elapsedTime / 1000);
-            const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-            const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-            const secs = (totalSeconds % 60).toString().padStart(2, '0');
+            // Navigation Screens
+            const timerScreen = document.getElementById('timerScreen');
+            const leaderboardScreen = document.getElementById('leaderboardScreen');
+            const navToLeaderboardBtn = document.getElementById('navToLeaderboardBtn');
+            const navToTimerBtn = document.getElementById('navToTimerBtn');
 
-            timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+            // Initialize display
+            displayLeaderboard();
 
-            // Save and update the score in the background automatically
-            saveScore(currentUsername, totalSeconds);
-        }
+            // Explicitly verify element existence to block execution crash loops
+            if (startButton) {
+                startButton.addEventListener('click', () => {
+                    const name = usernameInput.value.trim();
+                    if (name) {
+                        currentUsername = name;
+                        currentUserDisplay.textContent = currentUsername;
+                        overlay.style.display = 'none';
+                        startTimer();
+                    } else {
+                        alert("Please enter a valid username!");
+                    }
+                });
+            }
 
-        // LocalStorage Leaderboard logic
-        function saveScore(username, seconds) {
-            let leaderboard = JSON.parse(localStorage.getItem('toast_leaderboard')) || [];
-            const playerIndex = leaderboard.findIndex(p => p.name === username);
+            // Navigation Mechanics
+            navToLeaderboardBtn.addEventListener('click', () => {
+                timerScreen.classList.remove('active');
+                leaderboardScreen.classList.add('active');
+                displayLeaderboard();
+            });
 
-            if (playerIndex > -1) {
-                if (seconds > leaderboard[playerIndex].score) {
-                    leaderboard[playerIndex].score = seconds;
+            navToTimerBtn.addEventListener('click', () => {
+                leaderboardScreen.classList.remove('active');
+                timerScreen.classList.add('active');
+            });
+
+            function startTimer() {
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+
+            function updateTimer() {
+                const elapsedTime = Date.now() - startTime;
+                const totalSeconds = Math.floor(elapsedTime / 1000);
+                const hrs = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+                const mins = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+                const secs = (totalSeconds % 60).toString().padStart(2, '0');
+
+                timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+                saveScore(currentUsername, totalSeconds);
+            }
+
+            function saveScore(username, seconds) {
+                let leaderboard = JSON.parse(localStorage.getItem('toast_leaderboard')) || [];
+                const playerIndex = leaderboard.findIndex(p => p.name === username);
+
+                if (playerIndex > -1) {
+                    if (seconds > leaderboard[playerIndex].score) {
+                        leaderboard[playerIndex].score = seconds;
+                    }
+                } else {
+                    leaderboard.push({ name: username, score: seconds });
                 }
-            } else {
-                leaderboard.push({ name: username, score: seconds });
+
+                leaderboard.sort((a, b) => b.score - a.score);
+                leaderboard = leaderboard.slice(0, 10);
+                localStorage.setItem('toast_leaderboard', JSON.stringify(leaderboard));
             }
 
-            leaderboard.sort((a, b) => b.score - a.score);
-            leaderboard = leaderboard.slice(0, 10);
-            localStorage.setItem('toast_leaderboard', JSON.stringify(leaderboard));
-        }
-
-        function displayLeaderboard() {
-            const leaderboard = JSON.parse(localStorage.getItem('toast_leaderboard')) || [];
-            leaderboardList.innerHTML = "";
-
-            if (leaderboard.length === 0) {
-                leaderboardList.innerHTML = `<li class="leaderboard-item" style="justify-content: center;">No high scores yet!</li>`;
-                return;
-            }
-
-            leaderboard.forEach((player, index) => {
 </body>
 </html>
 
