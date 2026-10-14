@@ -187,21 +187,20 @@
 </head>
 <body>
 
-    <!-- Username Setup Overlay -->
+    
     <div class="overlay" id="usernameOverlay">
         <div class="modal">
             <h3>Enter Username to Start</h3>
-            <!-- Added required setup attributes directly to the markup -->
+            
             <input type="text" id="usernameInput" placeholder="ToastMaster99" maxlength="15">
-            <!-- Explicit inline trigger handles connection issues across testing tools -->
+         
             <button class="btn" id="startButton" onclick="handleStartClick()">Start Toasting 🍞</button>
         </div>
     </div>
 
-    <!-- Main Container -->
+  
     <div class="container">
         
-        <!-- SCREEN 1: THE MAIN TIMER DISPLAY -->
         <div id="timerScreen" class="screen active">
             <h1>Real Toast Timer</h1>
             
@@ -215,12 +214,12 @@
             <button class="btn" id="navToLeaderboardBtn" onclick="showLeaderboard()">View Leaderboard 🏆</button>
         </div>
 
-        <!-- SCREEN 2: THE HIDDEN LEADERBOARD -->
+        
         <div id="leaderboardScreen" class="screen leaderboard">
             <h2>🏆 Leaderboard (Highest Times)</h2>
             
             <ul class="leaderboard-list" id="leaderboardList">
-                <!-- Scores injected by JS -->
+               
             </ul>
 
             <button class="btn btn-secondary" id="navToTimerBtn" onclick="showTimer()">Back to Toasting 🍞</button>
@@ -228,13 +227,13 @@
 
     </div>
 
-    <!-- Script at the very bottom guarantees HTML is loaded and functions are globally accessible -->
+    
     <script>
         let startTime;
         let timerInterval;
         let currentUsername = "";
 
-        // Elements
+     
         const overlay = document.getElementById('usernameOverlay');
         const usernameInput = document.getElementById('usernameInput');
         const currentUserDisplay = document.getElementById('currentUserDisplay');
@@ -244,10 +243,10 @@
         const timerScreen = document.getElementById('timerScreen');
         const leaderboardScreen = document.getElementById('leaderboardScreen');
 
-        // Initial setup
+  
         displayLeaderboard();
 
-        // Direct Trigger Action
+       
         function handleStartClick() {
             const name = usernameInput.value.trim();
             if (name) {
